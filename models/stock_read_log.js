@@ -1,6 +1,6 @@
-var mongoose = require('mongoose');
+var mongoose = require("mongoose");
 
-const db = require('../mongodb');
+const db = require("../mongodb");
 
 const Schema = mongoose.Schema(
   {
@@ -9,21 +9,21 @@ const Schema = mongoose.Schema(
 
     scanned_time: {
       type: Date,
-      default: Date.now
+      default: Date.now,
     },
-		created_time: {
+    created_time: {
       type: Date,
-      default: Date.now
+      default: Date.now,
     },
     last_updated: {
       type: Date,
-      default: Date.now
+      default: Date.now,
     },
 
     sku: String,
     description: String,
     uom: String,
-    
+
     qty: {
       type: Number,
       default: 1,
@@ -53,7 +53,7 @@ const Schema = mongoose.Schema(
     order_no: String,
     prodis_company_id: String,
     prodis_line_id: String,
-    prodis_line_type: String, 
+    prodis_line_type: String,
 
     qr_list: Array,
 
@@ -63,7 +63,7 @@ const Schema = mongoose.Schema(
     },
     status_move_to_bin: {
       type: Number, // 0: not yet move to bin , 1: moved to bin
-      default: 0, 
+      default: 0,
     },
     status: {
       type: Number,
@@ -75,25 +75,26 @@ const Schema = mongoose.Schema(
     },
     status_sync: {
       type: Number,
-      default: 0 // 0: not synced, 1: synced
+      default: 0, // 0: not synced, 1: synced
     },
     last_synced: Date,
 
     status_pick: {
       type: Number,
-      default: 0 // 0: not picked yet, 1: picked
+      default: 0, // 0: not picked yet, 1: picked
     },
-    
+
     aggregation_count: Number,
 
-    stock_type: { // 0: unit stock, 1: QR Repacking
+    stock_type: {
+      // 0: unit stock, 1: QR Repacking
       type: Number,
-      default: 0
+      default: 0,
     },
-    
-    payload_raw: String
-	},
-  { collection: 'stock_read_log' }
+
+    payload_raw: String,
+  },
+  { collection: "stock_read_log" }
 );
 
-module.exports = db.model('stock_read_log', Schema);
+module.exports = db.model("stock_read_log", Schema);
