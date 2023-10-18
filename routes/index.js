@@ -58,6 +58,11 @@ router.use("/edit-repacking-data", async (req, res) => {
     (e) => !rejectedList.includes(e.payload)
   );
 
+  // if status needed to be change to rejected(1)
+  // findStock.qr_list.forEach((e) => {
+  //   if (rejectedList.includes(e.payload)) e.status_qc = 1;
+  // });
+
   const updateStock = [];
   for (let i = 0; i < findNewList.length; i++) {
     const el = findNewList[i];
