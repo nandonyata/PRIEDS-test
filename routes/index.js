@@ -58,7 +58,7 @@ router.use("/edit-repacking-data", async (req, res) => {
     (e) => !rejectedList.includes(e.payload)
   );
 
-  // if status needed to be change to rejected(1)
+  // if status needed to be change to rejected(1), uncomment line 62-64 and comment line 57-59
   // findStock.qr_list.forEach((e) => {
   //   if (rejectedList.includes(e.payload)) e.status_qc = 1;
   // });
