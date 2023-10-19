@@ -40,56 +40,65 @@ router.use("/import-data", async (req, res) => {
   });
 });
 
-router.use("/edit-repacking-data", async (req, res) => {
+router.use("/edit-repacking-data", async (req, res, next) => {
   // Silahkan dikerjakan disini.
-  const { company_id, payload, reject_qr_list, new_qr_list } = req.body;
+  try {
+    const { company_id, payload, reject_qr_list, new_qr_list } = req.body;
 
-  const newList = new_qr_list.map((e) => e.payload);
-  const rejectedList = reject_qr_list.map((e) => e.payload);
+    if (!company_id || !payload || !reject_qr_list || !new_qr_list)
+      throw new Error("Fill All Field");
 
-  let [findNewList, findStock] = await Promise.all([
-    stock_read_log.find({
-      "qr_list.payload": { $in: newList },
-    }),
-    stock_read_log.findOne({ company_id, payload }),
-  ]);
+    const newList = new_qr_list.map((e) => e.payload);
+    const rejectedList = reject_qr_list.map((e) => e.payload);
 
-  findStock.qr_list = findStock.qr_list.filter(
-    (e) => !rejectedList.includes(e.payload)
-  );
+    let [findNewList, findStock] = await Promise.all([
+      stock_read_log.find({
+        "qr_list.payload": { $in: newList },
+      }),
+      stock_read_log.findOne({ company_id, payload }),
+    ]);
 
-  // if status needed to be change to rejected(1), uncomment line 62-64 and comment line 57-59
-  // findStock.qr_list.forEach((e) => {
-  //   if (rejectedList.includes(e.payload)) e.status_qc = 1;
-  // });
+    if (!findStock) throw new Error("Stock Not Found");
 
-  const updateStock = [];
-  for (let i = 0; i < findNewList.length; i++) {
-    const el = findNewList[i];
-    const excludeQty = el.qr_list.filter((e) => !newList.includes(e.payload));
-    const includeQty = el.qr_list.filter((e) => newList.includes(e.payload));
-
-    findStock.qr_list = [...findStock.qr_list, ...includeQty];
-
-    updateStock.push(
-      stock_read_log.updateOne(
-        { payload: el.payload },
-        { $set: { qr_list: excludeQty, qty: excludeQty.length } }
-      )
+    findStock.qr_list = findStock.qr_list.filter(
+      (e) => !rejectedList.includes(e.payload)
     );
+
+    // if status needed to be change to rejected(1), uncomment code below and comment line 63-65
+    // findStock.qr_list.forEach((e) => {
+    //   if (rejectedList.includes(e.payload)) e.status_qc = 1;
+    // });
+
+    const updateStock = [];
+    for (let i = 0; i < findNewList.length; i++) {
+      const el = findNewList[i];
+      const excludeQty = el.qr_list.filter((e) => !newList.includes(e.payload));
+      const includeQty = el.qr_list.filter((e) => newList.includes(e.payload));
+
+      findStock.qr_list = [...findStock.qr_list, ...includeQty];
+
+      updateStock.push(
+        stock_read_log.updateOne(
+          { payload: el.payload },
+          { $set: { qr_list: excludeQty, qty: excludeQty.length } }
+        )
+      );
+    }
+
+    findStock.qty = findStock.qr_list.length;
+    updateStock.push(findStock.save());
+
+    await Promise.all(updateStock);
+
+    res.json({
+      statusCode: 1,
+      message: "stock_read_log.json edited!",
+      findStock,
+      findNewList,
+    });
+  } catch (error) {
+    next(error);
   }
-
-  findStock.qty = findStock.qr_list.length;
-  updateStock.push(findStock.save());
-
-  await Promise.all(updateStock);
-
-  res.json({
-    statusCode: 1,
-    message: "stock_read_log.json edited!",
-    findStock,
-    findNewList,
-  });
 });
 
 router.use("/", function (req, res, next) {
